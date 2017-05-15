@@ -18,8 +18,12 @@ class WindowMain : public QMainWindow
 	protected:
 		void changeEvent(QEvent *e);
 
+	private slots:
+		void on_redrawButton_clicked();
+
 	private:
 		Ui::WindowMain *ui;
+		QEvent *event;
 };
 
 #endif // WINDOW_MAIN_H

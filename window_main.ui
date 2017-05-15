@@ -7,11 +7,15 @@
     <x>0</x>
     <y>0</y>
     <width>645</width>
-    <height>368</height>
+    <height>392</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>WindowMain</string>
+   <string>Buddy Memory Management Algorithm Simulator</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/img/icon-set/svg/photos.svg</normaloff>:/img/icon-set/svg/photos.svg</iconset>
   </property>
   <widget class="QWidget" name="widget">
    <layout class="QGridLayout" name="gridLayout">
@@ -113,7 +117,6 @@
        </layout>
        <zorder>frame_4</zorder>
        <zorder>mdi</zorder>
-       <zorder>spaceInUseLabel</zorder>
       </widget>
       <widget class="QFrame" name="frame_2">
        <property name="enabled">
@@ -360,9 +363,6 @@
    </property>
   </action>
   <action name="actionSettingsWindow">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/img/icon-set/svg/controls-1.svg</normaloff>:/img/icon-set/svg/controls-1.svg</iconset>
@@ -375,9 +375,6 @@
    </property>
   </action>
   <action name="actionCommandWindow">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/img/icon-set/svg/settings-2.svg</normaloff>:/img/icon-set/svg/settings-2.svg</iconset>
@@ -390,9 +387,6 @@
    </property>
   </action>
   <action name="actionLogWindow">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
    <property name="icon">
     <iconset resource="resources.qrc">
      <normaloff>:/img/icon-set/svg/archive-2.svg</normaloff>:/img/icon-set/svg/archive-2.svg</iconset>

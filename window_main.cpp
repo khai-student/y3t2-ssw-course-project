@@ -24,3 +24,8 @@ void WindowMain::changeEvent(QEvent *e)
 			break;
 	}
 }
+
+void WindowMain::on_redrawButton_clicked()
+{
+	this->event = new QEvent();
+}

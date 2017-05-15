@@ -28,7 +28,8 @@ SOURCES += main.cpp\
 
 HEADERS  += window_main.h
 
-FORMS    += window_main.ui
+FORMS    += window_main.ui \
+    dialog_settings.ui
 
 RESOURCES += \
     resources.qrc
