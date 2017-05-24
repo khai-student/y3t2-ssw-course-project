@@ -8,7 +8,7 @@ MemorySettings::MemorySettings()
 	autoSaveCmds = true;
 }
 
-uint64_t MemorySettings::DegreeToBytes(uint8_t& degree)
+uint64_t MemorySettings::DegreeToBytes(uint8_t degree)
 {
 	uint64_t bytes = 1;
 	for (bytes = 1; degree > 0; --degree)
@@ -84,7 +84,7 @@ bool MemorySettings::GetAutoSaveCmds()
 	return autoSaveCmds;
 }
 
-QString MemorySettings::DegreeToString(uint8_t& degree)
+QString MemorySettings::DegreeToString(uint8_t degree)
 {
 	uint8_t divider = 0;
 	uint16_t bytes = 1;
@@ -96,19 +96,19 @@ QString MemorySettings::DegreeToString(uint8_t& degree)
 
 	switch (divider) {
 		case 0:
-			result = QString("%1 B").arg(bytes);
+			result = QString("%1B").arg(bytes);
 			break;
 		case 1:
-			result = QString("%1 KB").arg(bytes);
+			result = QString("%1KB").arg(bytes);
 			break;
 		case 2:
-			result = QString("%1 MB").arg(bytes);
+			result = QString("%1MB").arg(bytes);
 			break;
 		case 3:
-			result = QString("%1 GB").arg(bytes);
+			result = QString("%1GB").arg(bytes);
 			break;
 		case 4:
-			result = QString("%1 TB").arg(bytes);
+			result = QString("%1TB").arg(bytes);
 			break;
 		case 5:
 			result = QString("%1 PB").arg(bytes);

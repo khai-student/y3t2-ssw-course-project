@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui svg
+QT       += core gui svg charts
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,11 +26,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         window_main.cpp \
     dialog_settings.cpp \
-    memory_settings.cpp
+    memory_settings.cpp \
+    command_processor.cpp \
+    memory.cpp \
+    block.cpp
 
 HEADERS  += window_main.h \
     dialog_settings.h \
-    memory_settings.h
+    memory_settings.h \
+    command_processor.h \
+    memory.h \
+    block.h
 
 FORMS    += window_main.ui \
     dialog_settings.ui

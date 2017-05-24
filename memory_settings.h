@@ -12,8 +12,8 @@ class MemorySettings
 		const double MAX_STEPS_EXECUTION_SPEED = 5;
 
 		MemorySettings();
-		static uint64_t DegreeToBytes(uint8_t& degree);
-		static QString DegreeToString(uint8_t& degree);
+		static uint64_t DegreeToBytes(uint8_t degree);
+		static QString DegreeToString(uint8_t degree);
 
 		QResultStatus SetMinBlockDegree(uint8_t degree);
 		QResultStatus SetTotalMemoryDegree(uint8_t degree);

@@ -5,8 +5,19 @@
 #include <QDebug>
 #include <QDateTime>
 #include <QFile>
+#include <QFileDialog>
+#include <QShortcut>
+#include <QList>
+#include <QTableWidget>
+#include <QTableWidgetItem>
+#include <QDateTime>
+#include <QTimer>
+#include <QtCharts/QChartView>
+
+QT_CHARTS_USE_NAMESPACE
 
 #include "memory_settings.h"
+#include "command_processor.h"
 
 namespace Ui {
 	class DialogSettings;
@@ -27,24 +38,30 @@ class DialogSettings : public QDialog
 	public:
 		explicit DialogSettings(QWidget *parent = 0);
 		~DialogSettings();
+		void printMessage(const QString& string);
 
 	protected:
 		void changeEvent(QEvent *e);
 
 	private:
-		Ui::DialogSettings *ui;
-		MemorySettings *memorySettings;
+		Ui::DialogSettings* ui;
+		MemorySettings* memorySettings;
+		QShortcut* hotkeyDeleteCmd;
+		CommandProcessor* processor;
+		QTimer* execTimer;
 
 		void updateSettingsFromObject();
-		void updateLabels();
-		void printMessage(const QString& string);
+		void updateLabels();	
 
 	public slots:
 		void changeTab(DialogTab tab);
 		void writeLog(const QString& string);
+		void queryChart();
+
 
 	signals:
 		void eventMessage(const QString& string);
+		void sendChart(QChartView* chartView);
 
 	private slots:
 		void on_minBlockDegreeSlider_sliderMoved(int position);
@@ -54,6 +71,10 @@ class DialogSettings : public QDialog
 		void on_restoreDefaultSettings_clicked();
 		void on_clearLog_clicked();
 		void on_exportLog_clicked();
+		void on_deleteCmd();
+		void on_autoExec_clicked();
+		void on_execNextCmd_clicked();
+		void on_resetExec_clicked();
 };
 
 #endif // DIALOG_SETTINGS_H

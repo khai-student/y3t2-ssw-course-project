@@ -4,9 +4,14 @@
 DialogSettings::DialogSettings(QWidget *parent) :
 	QDialog(parent),
 	ui(new Ui::DialogSettings),
-	memorySettings(new MemorySettings())
+	memorySettings(new MemorySettings()),
+	processor(new CommandProcessor(memorySettings)),
+	execTimer(new QTimer())
 {
 	ui->setupUi(this);
+
+	hotkeyDeleteCmd = new QShortcut(QKeySequence("Del"), parent);
+	connect(hotkeyDeleteCmd, SIGNAL(activated()), this, SLOT(on_deleteCmd()));
 }
 
 DialogSettings::~DialogSettings()
@@ -29,9 +34,6 @@ void DialogSettings::changeEvent(QEvent *e)
 
 void DialogSettings::updateSettingsFromObject()
 {
-	uint8_t minBlockDegree = memorySettings->GetMinBlockDegree();
-	uint8_t totalMemoryDegree = memorySettings->GetTotalMemoryDegree();
-
 	ui->minBlockDegreeSlider->setMinimum(1);
 	ui->minBlockDegreeSlider->setMaximum(memorySettings->MAX_TOTAL_MEMORY_DEGREE);
 	ui->minBlockDegreeSpinBox->setMinimum(1);
@@ -90,6 +92,11 @@ void DialogSettings::writeLog(const QString& string)
 	ui->log->append(string);
 }
 
+void DialogSettings::queryChart()
+{
+	emit sendChart(processor->toChart());
+}
+
 void DialogSettings::on_minBlockDegreeSlider_sliderMoved(int position)
 {
 	if (memorySettings->SetMinBlockDegree(position) != QResult_Success)
@@ -145,9 +152,11 @@ void DialogSettings::on_clearLog_clicked()
 void DialogSettings::on_exportLog_clicked()
 {
 	// choosing file to export
+	QDateTime dateTime = QDateTime::currentDateTime();
+	QString timestamp = dateTime.toString("YYYY-MM-dd HH:mm:ss");
 	QString fileName = QFileDialog::getSaveFileName(this,
 								 "Choose file for writing log",
-								 QString("Log %1.txt", QDateTime::toString("YYYY-MM-dd HH:mm:ss")),
+								 QString("Log %1.txt").arg(timestamp),
 								 "Text files (*.txt) ;; All files (*.*)");
 	// trying to open file
 	QFile file(fileName);
@@ -162,4 +171,55 @@ void DialogSettings::on_exportLog_clicked()
 	// closing file
 	file.flush();
 	file.close();
+}
+
+void DialogSettings::on_deleteCmd()
+{
+	QList<QTableWidgetItem*> selected = ui->cmds->selectedItems();
+
+	foreach (QTableWidgetItem* cmdLine, selected) {
+		ui->cmds->removeRow(cmdLine->row());
+	}
+}
+
+void DialogSettings::on_autoExec_clicked()
+{
+	if (execTimer->isActive())
+	{
+		// stop is clicked
+		execTimer->stop();
+		ui->autoExec->setText("Automatic execution");
+	}
+	else
+	{
+		// start is clicked
+		QObject::connect(execTimer, SIGNAL(timeout()), this, SLOT(on_execNextCmd_clicked()));
+		execTimer->start(memorySettings->GetStepsExecutionSpeed() * 1000);
+		ui->autoExec->setText("Stop execution");
+	}
+}
+
+void DialogSettings::on_execNextCmd_clicked()
+{
+	QString result = "";
+	if (processor->execNextCmd(&result) == QResult_Success)
+	{
+		emit eventMessage(QString("[ OK ] %1").arg(result));
+	}
+	else
+	{
+		emit eventMessage(QString("[ERROR] %1").arg(result));
+		if (execTimer->isActive())
+		{
+			// stop is clicked
+			execTimer->stop();
+			ui->autoExec->setText("Automatic execution");
+		}
+		on_resetExec_clicked();
+	}
+}
+
+void DialogSettings::on_resetExec_clicked()
+{
+	processor->resetExec();
 }

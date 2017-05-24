@@ -4,11 +4,7 @@
 #include <QMainWindow>
 #include <QLabel>
 #include <QtCharts/QChartView>
-#include <QtCharts/QBarSeries>
-#include <QtCharts/QBarSet>
-#include <QtCharts/QLegend>
-#include <QtCharts/QBarCategoryAxis>
-#include <QtCharts/QHorizontalPercentBarSeries>
+#include <QSvgRenderer>
 
 #include "dialog_settings.h"
 
@@ -45,16 +41,21 @@ class WindowMain : public QMainWindow
 
 	private:
 		const uint16_t MESSAGE_TIMEOUT = 2000;
+		QString svgPath = QString("%1/Memory.svg").arg(QDir::currentPath());
 
 		Ui::WindowMain *ui;
 		QLabel *viewLabel;
 		QChartView *viewChart;
 
+		QResultStatus svgToLabel();
+
 	public slots:
 		void showMessage(const QString& string);
+		void receiveChart(QChartView* chartView);
 
 	signals:
 		void chooseDialogTab(DialogTab tab);
+		void queryChart();
 };
 
 #endif // WINDOW_MAIN_H
