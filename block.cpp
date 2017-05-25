@@ -29,6 +29,9 @@ QPair<Block*, Block*>* Block::split()
 	childFirst = new Block(this);
 	childSecond = new Block(this);
 
+	childFirst->beginAddress = this->beginAddress;
+	childSecond->beginAddress = this->beginAddress + MemorySettings::degreeToBytes(sizeDegree) / 2;
+
 	pair->first = childFirst;
 	pair->second = childSecond;
 	return pair;
@@ -126,6 +129,11 @@ QColor Block::getColor() const
 	return color;
 }
 
+uint64_t Block::getBeginAddress() const
+{
+	return beginAddress;
+}
+
 void Block::mergeChilds()
 {
 
@@ -146,4 +154,5 @@ Block::Block()
 	this->childFirst = nullptr;
 	this->childSecond = nullptr;
 	color = QColor(rand()%256, rand()%256, rand()%256);
+	beginAddress = 0;
 }

@@ -108,7 +108,6 @@ QString CommandProcessor::getRandomName() const
 QResultStatus CommandProcessor::execNextCmd(QString* result)
 {
 	QResultStatus resultStatus = QResult_Success;
-	uint8_t sizeDegree = 0;
 
 	if (getNextCmdIndex() >= 0)
 	{
@@ -126,7 +125,7 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 				{
 					if (resultStatus == QResult_Success)
 					{
-						result->append(QString("Process %1 occupied %2.").arg(cmd->blockName, MemorySettings::degreeToString(mem->query(cmd->blockName))));
+						result->append(QString("Successfully allocated %1.").arg(cmd->blockName));
 					}
 					else
 					{
@@ -157,16 +156,7 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 					throw QResult_NullPointer;
 				}
 
-				sizeDegree = mem->query(cmd->blockName);
-				if (sizeDegree > 0)
-				{
-					result->append(QString("Process %1 occupies %2.").arg(cmd->blockName, MemorySettings::degreeToString(sizeDegree)));
-				}
-				else
-				{
-					result->append(QString("Cannot find process %1.").arg(cmd->blockName));
-					resultStatus = QResult_Failure;
-				}
+				result->append(mem->query(cmd->blockName));
 				break;
 			default:
 				resultStatus = QResult_IncorrectData;

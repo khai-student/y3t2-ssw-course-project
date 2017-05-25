@@ -33,7 +33,7 @@ class Memory
 
 		QResultStatus allocate(const uint64_t bytes, const QString& procName);
 		QResultStatus free(const QString& procName);
-		uint8_t query(const QString& procName);
+		QString query(const QString& procName);
 		QResultStatus toSvg(const QString& pathToFile);
 		QChartView* toChart();
 		void clear();

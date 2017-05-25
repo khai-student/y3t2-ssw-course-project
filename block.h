@@ -10,6 +10,7 @@
 #include <ctime>
 
 #include "common.h"
+#include "memory_settings.h"
 
 class Block
 {
@@ -34,9 +35,12 @@ class Block
 		Block* getFirstChild() const;
 		Block* getSecondChild() const;
 		QColor getColor() const;
+		uint64_t getBeginAddress() const;
+
 
 	protected:
 		void mergeChilds();
+		uint64_t beginAddress;
 
 	private:
 		uint8_t sizeDegree;

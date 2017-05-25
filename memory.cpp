@@ -114,7 +114,7 @@ QResultStatus Memory::free(const QString& procName)
 	return resultStatus;
 }
 
-uint8_t Memory::query(const QString& procName)
+QString Memory::query(const QString& procName)
 {
 	foreach (level_t* level, *blocks)
 	{
@@ -123,11 +123,20 @@ uint8_t Memory::query(const QString& procName)
 			if ((pair->first != nullptr && pair->first->getProcName() == procName)
 					|| (pair->second != nullptr && pair->second->getProcName() == procName))
 			{
-				return (pair->first->getProcName() == procName ? pair->first->getDegree() : pair->second->getDegree());
+				Block* block = pair->first->getProcName() == procName ? pair->first : pair->second;
+
+				uint16_t size = MemorySettings::degreeToBytes(block->getDegree());
+				uint16_t beginAddress = block->getBeginAddress();
+
+				return QString("Block %1 > Size = %2 -> [%3; %4]").arg(
+							block->getProcName(),
+							QString::number(size),
+							QString::number(beginAddress),
+							QString::number(beginAddress + size));
 			}
 		}
 	}
-	return 0;
+	return QString("Block %1 not found.").arg(procName);
 }
 
 QResultStatus Memory::toSvg(const QString& pathToFile)
