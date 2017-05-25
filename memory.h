@@ -22,16 +22,6 @@ QT_CHARTS_USE_NAMESPACE
 #include "memory_settings.h"
 #include "block.h"
 
-enum DrawUtility
-{
-	dot,
-	neato,
-	fdp,
-	sfdp,
-	twopi,
-	circo
-};
-
 class Memory
 {
 	public:
@@ -44,8 +34,10 @@ class Memory
 		QResultStatus allocate(const uint64_t bytes, const QString& procName);
 		QResultStatus free(const QString& procName);
 		uint8_t query(const QString& procName);
-		QResultStatus toSvg(const QString& pathToFile, const DrawUtility& algo);
+		QResultStatus toSvg(const QString& pathToFile);
 		QChartView* toChart();
+		void clear();
+		void recalculateInfo();
 
 	private:
 		MemorySettings* settings;
@@ -56,7 +48,7 @@ class Memory
 		Block* splitUntilDegree(const uint8_t degree);
 		QResultStatus free(Block* block);
 		QResultStatus memToDot(QString* result);
-		QResultStatus dotToSvg(const QString& pathToFile, const DrawUtility& util);
+		QResultStatus dotToSvg(const QString& pathToFile);
 };
 
 #endif // MEMORY_H

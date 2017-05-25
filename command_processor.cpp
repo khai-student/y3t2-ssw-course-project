@@ -3,7 +3,7 @@
 CommandProcessor::CommandProcessor(MemorySettings* settings) :
 	cmds(new QVector<Command*>()),
 	mem(new Memory(settings)),
-	nextCmdIndex(0)
+	nextCmd(nullptr)
 {
 
 }
@@ -15,14 +15,18 @@ CommandProcessor::~CommandProcessor()
 	delete mem;
 }
 
-void CommandProcessor::AddCmd(Command* cmd)
+void CommandProcessor::addCmd(Command* cmd)
 {
 	cmds->push_back(cmd);
+	if (nextCmd == nullptr)
+	{
+		nextCmd = cmd;
+	}
 }
 
-Command* CommandProcessor::GetCmd(const uint16_t index)
+Command* CommandProcessor::getCmd(const uint16_t index)
 {
-	if (GetCmdsCount() <= index)
+	if (getCmdsCount() <= index)
 	{
 		return nullptr;
 	}
@@ -32,33 +36,73 @@ Command* CommandProcessor::GetCmd(const uint16_t index)
 	}
 }
 
-QVector<Command*>* CommandProcessor::GetAllCmds()
+QVector<Command*>* CommandProcessor::getAllCmds()
 {
-	return cmds;
+	QVector<Command*>* clone = new QVector<Command*>();
+	foreach (Command* cmd, *cmds)
+	{
+		clone->push_back(new Command(cmd));
+	}
+	return clone;
 }
 
-QResultStatus CommandProcessor::RemoveCmd(const uint16_t index)
+QResultStatus CommandProcessor::removeCmd(const uint16_t index)
 {
 	QResultStatus resultStatus = QResult_Success;
-	if (GetCmdsCount() <= index)
+	if (getCmdsCount() <= index)
 	{
 		resultStatus = QResult_IndexOutOfRange;
 	}
 	else
 	{
-		cmds->removeAt(index);
+		if (index == getNextCmdIndex())
+		{
+			cmds->removeAt(index);
+			resetExec();
+		}
+		else
+		{
+			cmds->removeAt(index);
+		}
+
 	}
 	return resultStatus;
 }
 
-void CommandProcessor::RemoveAllCmds()
+void CommandProcessor::removeAllCmds()
 {
 	cmds->clear();
 }
 
-uint16_t CommandProcessor::GetCmdsCount() const
+uint16_t CommandProcessor::getCmdsCount() const
 {
 	return cmds->size();
+}
+
+QString CommandProcessor::getRandomName() const
+{
+	QString name = "";
+	uint64_t counter = 0;
+
+	bool isNameUnique = false;
+	while (!isNameUnique)
+	{
+		name = QString("P%1").arg(QString::number(counter++));
+		try
+		{
+			foreach (Command* cmd, *cmds)
+			{
+				if (cmd->blockName == name) throw true;
+			}
+			throw false;
+		}
+		catch (bool isFound)
+		{
+			isNameUnique = !isFound;
+		}
+	}
+
+	return name;
 }
 
 QResultStatus CommandProcessor::execNextCmd(QString* result)
@@ -66,19 +110,23 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 	QResultStatus resultStatus = QResult_Success;
 	uint8_t sizeDegree = 0;
 
-	if (cmds->size() > nextCmdIndex)
+	if (getNextCmdIndex() >= 0)
 	{
-		Command* cmd = cmds->at(nextCmdIndex);
+		Command* cmd = nextCmd;
 
 		switch (cmd->action)
 		{
 			case CommandAction::Allocate:
 				resultStatus = mem->allocate(cmd->blockSize, cmd->blockName);
-				if (result != nullptr)
+				if (resultStatus != QResult_Success)
+				{
+					result->append(QString("Command cannot be done."));
+				}
+				else if (result != nullptr)
 				{
 					if (resultStatus == QResult_Success)
 					{
-						result->append(QString("Process %1 occupied %2.").arg(cmd->blockName, MemorySettings::DegreeToString(mem->query(cmd->blockName))));
+						result->append(QString("Process %1 occupied %2.").arg(cmd->blockName, MemorySettings::degreeToString(mem->query(cmd->blockName))));
 					}
 					else
 					{
@@ -88,18 +136,20 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 				break;
 			case CommandAction::Free:
 				resultStatus = mem->free(cmd->blockName);
-				if (result != nullptr)
+				if (resultStatus == QResult_Success)
 				{
-					if (resultStatus == QResult_Success)
+					if (result != nullptr)
 					{
 						result->append(QString("Memory of process %1 freed.").arg(cmd->blockName));
 					}
 				}
 				else
 				{
-					result->append(QString("Block free failed for process %1.").arg(cmd->blockName));
+					if (result != nullptr)
+					{
+						result->append(QString("Block free failed for process %1.").arg(cmd->blockName));
+					}
 				}
-				throw resultStatus;
 				break;
 			case CommandAction::Query:
 				if (result == nullptr)
@@ -110,7 +160,7 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 				sizeDegree = mem->query(cmd->blockName);
 				if (sizeDegree > 0)
 				{
-					result->append(QString("Process %1 occupies %2.").arg(cmd->blockName, MemorySettings::DegreeToString(sizeDegree)));
+					result->append(QString("Process %1 occupies %2.").arg(cmd->blockName, MemorySettings::degreeToString(sizeDegree)));
 				}
 				else
 				{
@@ -124,7 +174,28 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 	}
 	else
 	{
+		*result = "Command not found.";
 		resetExec();
+		resultStatus = QResult_NotFound;
+	}
+
+	if (resultStatus == QResult_Success)
+	{
+		for (uint16_t index = 0; index < cmds->size(); ++index)
+		{
+			if (cmds->at(index) == nextCmd)
+			{
+				if (index == cmds->size() - 1)
+				{
+					nextCmd = cmds->at(0);
+				}
+				else
+				{
+					nextCmd = cmds->at(index+1);
+				}
+				break;
+			}
+		}
 	}
 
 	return resultStatus;
@@ -132,12 +203,42 @@ QResultStatus CommandProcessor::execNextCmd(QString* result)
 
 void CommandProcessor::resetExec()
 {
-	nextCmdIndex = 0;
+	if (cmds->size() > 0)
+	{
+		nextCmd = cmds->at(0);
+	}
+	if (mem != nullptr)
+	{
+		mem->clear();
+	}
 }
 
-QResultStatus CommandProcessor::toSvg(const QString& pathToFile, const DrawUtility& algo)
+int16_t CommandProcessor::getNextCmdIndex()
 {
-	return mem->toSvg(pathToFile, algo);
+	if (nextCmd == nullptr)
+	{
+		if (cmds->size())
+		{
+			nextCmd = cmds->at(0);
+		}
+		else
+		{
+			return -1;
+		}
+	}
+	for (uint16_t index = 0; index < cmds->size(); ++index)
+	{
+		if (cmds->at(index) == nextCmd)
+		{
+			return index;
+		}
+	}
+	return -1;
+}
+
+QResultStatus CommandProcessor::toSvg(const QString& pathToFile)
+{
+	return mem->toSvg(pathToFile);
 }
 
 QChartView* CommandProcessor::toChart()
@@ -145,4 +246,64 @@ QChartView* CommandProcessor::toChart()
 	return mem->toChart();
 }
 
+void CommandProcessor::queryInfo()
+{
+	mem->recalculateInfo();
+}
 
+QString Command::cmdToStr()
+{
+	QString result = "";
+
+	switch (action)
+	{
+		case CommandAction::Allocate:
+			result.append("Allocate");
+			break;
+		case CommandAction::Free:
+			result.append("Free");
+			break;
+		case CommandAction::Query:
+			result.append("Query");
+			break;
+		default:
+			return "";
+	}
+	result = QString("%1 %2 %3").arg(result, blockName, QString::number(blockSize));
+
+	return result;
+}
+
+QResultStatus Command::strToCmd(QString& str)
+{
+	try
+	{
+		QStringList subStrings = str.split(QRegularExpression("\\s? \\s?"), QString::SkipEmptyParts);
+		if (subStrings.size() != 3) throw QResult_IncorrectData;
+
+		if (subStrings.at(0).toLower() == "allocate")
+		{
+			action = CommandAction::Allocate;
+		}
+		else if (subStrings.at(0).toLower() == "free")
+		{
+			action = CommandAction::Free;
+		}
+		else if (subStrings.at(0).toLower() == "query")
+		{
+			action = CommandAction::Query;
+		}
+		else throw QResult_IncorrectData;
+
+		blockName = subStrings.at(1);
+		bool isConvertionSuccessful = false;
+		blockSize = ((QString)subStrings[2]).toULongLong(&isConvertionSuccessful);
+		if (!isConvertionSuccessful) throw QResult_IncorrectData;
+
+		throw QResult_Success;
+	}
+	catch (QResultStatus resultStatus)
+	{
+		return resultStatus;
+	}
+}

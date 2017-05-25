@@ -5,6 +5,9 @@
 #include <QString>
 #include <QPair>
 #include <QVector>
+#include <QColor>
+#include <cstdlib>
+#include <ctime>
 
 #include "common.h"
 
@@ -30,6 +33,7 @@ class Block
 		Block* getParent() const;
 		Block* getFirstChild() const;
 		Block* getSecondChild() const;
+		QColor getColor() const;
 
 	protected:
 		void mergeChilds();
@@ -41,6 +45,7 @@ class Block
 		Block* parent;
 		Block* childFirst;
 		Block* childSecond;
+		QColor color;
 };
 
 

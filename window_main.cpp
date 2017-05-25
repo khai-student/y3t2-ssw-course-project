@@ -14,11 +14,17 @@ WindowMain::WindowMain(QWidget *parent) :
 	connect(dialog, SIGNAL(eventMessage(QString)), this, SLOT(showMessage(QString)));
 	connect(this, SIGNAL(queryChart()), dialog, SLOT(queryChart()));
 	connect(dialog, SIGNAL(sendChart(QChartView*)), this, SLOT(receiveChart(QChartView*)));
+	connect(this, SIGNAL(querySvg(QString)), dialog, SLOT(querySvg(QString)));
+	connect(dialog, SIGNAL(sendSvg(QString)), this, SLOT(receiveSvg(QString)));
+	connect(this, SIGNAL(queryInfo()), dialog, SLOT(queryInfo()));
+	connect(dialog, SIGNAL(redraw()), this, SLOT(on_redrawButton_clicked()));
 
 	ui->view->addWidget(viewLabel);
+	emit queryChart();
 	ui->view->addWidget(viewChart);
+	ui->view->setLayout(new QGridLayout());
 
-	viewLabel->setText("asdf");
+	on_redrawButton_clicked();
 }
 
 WindowMain::~WindowMain()
@@ -45,37 +51,44 @@ void WindowMain::on_redrawButton_clicked()
 {
 	if (ui->viewTypeBinaryTree->isChecked())
 	{
-		svgToLabel();
+		emit querySvg(svgPath);
 	}
 	else
 	{
 		emit queryChart();
 	}
+	emit queryInfo();
+	showInfo();
 }
 
 void WindowMain::on_actionCommandWindow_triggered()
 {
+	dialog->setHidden(false);
 	emit chooseDialogTab(DialogTab::Commands);
 }
 
 void WindowMain::on_actionSettingsWindow_triggered()
 {
+	dialog->setHidden(false);
 	emit chooseDialogTab(DialogTab::Settings);
 }
 
 void WindowMain::on_actionLogWindow_triggered()
 {
+	dialog->setHidden(false);
 	emit chooseDialogTab(DialogTab::Log);
 }
 
 void WindowMain::on_viewTypeBinaryTree_clicked()
 {
 	ui->view->setCurrentIndex(ui->view->indexOf(viewLabel));
+	on_redrawButton_clicked();
 }
 
 void WindowMain::on_viewTypeHorizontalBar_clicked()
 {
 	ui->view->setCurrentIndex(ui->view->indexOf(viewChart));
+	on_redrawButton_clicked();
 }
 
 QResultStatus WindowMain::svgToLabel()
@@ -89,7 +102,7 @@ QResultStatus WindowMain::svgToLabel()
 		// Load your SVG
 		QSvgRenderer renderer(svgPath);
 		// Prepare a QImage with desired characteritisc
-		QImage image(ui->label->width(), ui->label->height(), QImage::Format_ARGB32);
+		QImage image(viewLabel->width(), viewLabel->height(), QImage::Format_ARGB32);
 		image.fill(0xfffffffaa);  // partly transparent red-ish background
 
 		// Get QPainter that paints to the image
@@ -98,13 +111,21 @@ QResultStatus WindowMain::svgToLabel()
 
 		QPixmap pixmap;
 		pixmap = pixmap.fromImage(image);
-		viewLabel->setPixmap(pixmap.scaled(viewLabel->width(), viewLabel->height(), Qt::KeepAspectRatio));
+		viewLabel->setPixmap(pixmap.scaled(ui->view->width(), ui->view->height(), Qt::KeepAspectRatio));
 	}
 	catch (QResultStatus resultStatus)
 	{
 		return resultStatus;
 	}
 	return QResult_Success;
+}
+
+void WindowMain::redraw()
+{
+	if (ui->viewTypeBinaryTree->isChecked())
+	{
+		svgToLabel();
+	}
 }
 
 void WindowMain::showMessage(const QString& string)
@@ -114,6 +135,47 @@ void WindowMain::showMessage(const QString& string)
 
 void WindowMain::receiveChart(QChartView* chartView)
 {
+	ui->view->removeWidget(viewChart);
 	if (viewChart != nullptr) delete viewChart;
-	this->viewChart = chartView;
+	viewChart = chartView;
+	ui->view->addWidget(viewChart);
+	ui->view->setCurrentIndex(ui->view->indexOf(viewChart));
+	ui->view->setLayout(new QGridLayout());
+	redraw();
+}
+
+void WindowMain::receiveSvg(const QString& filePath)
+{
+	if (filePath != svgPath)
+	{
+		viewLabel->setText("SVG creation failed.");
+	}
+	else
+	{
+		redraw();
+	}
+}
+
+void WindowMain::on_actionAboutQt_triggered()
+{
+	QMessageBox::aboutQt(this, "About Qt5");
+}
+
+void WindowMain::on_actionAboutProgram_triggered()
+{
+	QMessageBox::information(this, "About the program", "Buddy Memory Management Algorithm Simulator is written by Yuriy Vlasov as the course project in 2017.");
+}
+
+void WindowMain::on_actionExit_triggered()
+{
+	exit(0);
+}
+
+void WindowMain::showInfo()
+{
+	ui->progressBar->setRange(0, 10000);
+	ui->progressBar->setValue(MemoryInfo::usedPercent * 10000);
+	ui->spaceInUseLabel->setText(MemoryInfo::usedMemory);
+	ui->blockMinSizeLabel->setText(MemoryInfo::smallestBlockSize);
+	ui->blocksQuantityLabel->setText(QString::number(MemoryInfo::blocksQuantity));
 }

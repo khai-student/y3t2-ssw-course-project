@@ -4,12 +4,15 @@
 #include <QtCore/qglobal.h>
 #include <QVector>
 #include <QtCharts/QChartView>
+#include <QRegularExpression>
+#include <QStringList>
 
 QT_CHARTS_USE_NAMESPACE
 
 #include "common.h"
 #include "memory.h"
 #include "memory_settings.h"
+#include "memory_info.h"
 
 enum CommandAction
 {
@@ -21,7 +24,20 @@ enum CommandAction
 class Command
 {
 	public:
-		Command() { }
+		Command()
+		{
+			action = Free;
+			blockName = "";
+			blockSize = 0;
+		}
+
+		Command(const Command* cmd) : Command()
+		{
+			this->action = cmd->action;
+			this->blockName = cmd->blockName;
+			this->blockSize = cmd->blockSize;
+		}
+		~Command() { }
 
 		Command(const CommandAction& action, const QString& blockName, const uint64_t blockSize)
 		{
@@ -33,6 +49,9 @@ class Command
 		CommandAction action;
 		QString blockName;
 		uint64_t blockSize;
+
+		QString cmdToStr();
+		QResultStatus strToCmd(QString& str);
 };
 
 class CommandProcessor
@@ -41,24 +60,27 @@ class CommandProcessor
 		CommandProcessor(MemorySettings* settings);
 		~CommandProcessor();
 
-		void AddCmd(Command* cmd);
-		Command* GetCmd(const uint16_t index);
-		QVector<Command*>* GetAllCmds();
-		QResultStatus RemoveCmd(const uint16_t index);
-		void RemoveAllCmds();
-		uint16_t GetCmdsCount() const;
+		void addCmd(Command* cmd);
+		Command* getCmd(const uint16_t index);
+		QVector<Command*>* getAllCmds();
+		QResultStatus removeCmd(const uint16_t index);
+		void removeAllCmds();
+		uint16_t getCmdsCount() const;
+		QString getRandomName() const;
 
 		QResultStatus execNextCmd(QString* result = nullptr);
 		void resetExec();
-		uint16_t getNextCmdIndex();
+		int16_t getNextCmdIndex();
 
-		QResultStatus toSvg(const QString& pathToFile, const DrawUtility& algo);
+		QResultStatus toSvg(const QString& pathToFile);
 		QChartView* toChart();
+
+		void queryInfo();
 
 	private:
 		QVector<Command*>* cmds;
 		Memory *mem;
-		uint16_t nextCmdIndex;
+		Command* nextCmd;
 };
 
 #endif // COMMAND_PROCESSOR_H

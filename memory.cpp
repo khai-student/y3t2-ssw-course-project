@@ -13,39 +13,60 @@ Memory::~Memory()
 Memory::Memory(MemorySettings* settings)
 {
 	this->settings = settings;
-	blocks = new tree_t(settings->GetTotalMemoryDegree() + 1 - settings->GetMinBlockDegree());
-	rootPair = new pair_t(new Block(settings->GetTotalMemoryDegree(), settings->GetMinBlockDegree()), nullptr);
-	blocks->push_back(new level_t);
+	blocks = new tree_t();
+
+	size_t levelsCount = settings->getTotalMemoryDegree() + 1 - settings->getMinBlockDegree();
+	for (uint8_t levelIndex = 0; levelIndex < levelsCount; ++levelIndex)
+	{
+		blocks->push_back(new level_t());
+	}
+
+	rootPair = new pair_t(new Block(settings->getTotalMemoryDegree(), settings->getMinBlockDegree()), nullptr);
 	blocks->at(0)->push_back(rootPair);
+
+	recalculateInfo();
 }
 
 QResultStatus Memory::allocate(const uint64_t bytes, const QString& procName)
 {
+	// looking for block with the same name
+	foreach (level_t* level, *blocks)
+	{
+		foreach (pair_t* pair, *level)
+		{
+			if ((pair->first != nullptr && pair->first->getProcName() == procName) ||
+					(pair->second != nullptr && pair->second->getProcName() == procName))
+			{
+				return QResult_ActionUnavailable;
+			}
+		}
+	}
+
 	QResultStatus resultStatus = QResult_Success;
 	uint8_t searchedDegree = 0;
 	// looking for degree
 	for (uint64_t size = 1;
-		 searchedDegree <= settings->GetTotalMemoryDegree() && size < bytes;
+		 searchedDegree <= settings->getTotalMemoryDegree() && size < bytes;
 		 ++searchedDegree, size <<= 1);
 
-	if (searchedDegree > settings->GetTotalMemoryDegree())
+	if (searchedDegree > settings->getTotalMemoryDegree())
 	{
 		resultStatus = QResult_ActionUnavailable;
 	}
 	else
 	{
-		if (searchedDegree < settings->GetMinBlockDegree())
+		if (searchedDegree < settings->getMinBlockDegree())
 		{
-			searchedDegree = settings->GetMinBlockDegree();
+			searchedDegree = settings->getMinBlockDegree();
 		}
 
-		uint8_t rowIndex = settings->GetTotalMemoryDegree() - searchedDegree;
+		uint8_t rowIndex = settings->getTotalMemoryDegree() - searchedDegree;
 		bool isBlockFound = false;
 		foreach (pair_t* pair, *(blocks->at(rowIndex)))
 		{
-			if (pair->first->isFree() || pair->second->isFree())
+			if ((pair->first != nullptr && pair->first->isFree()) || (pair->second != nullptr && pair->second->isFree()))
 			{
-				Block* freeBlock = (pair->first->isFree() ? pair->first : pair->second);
+				Block* freeBlock = (pair->first != nullptr && pair->first->isFree() ? pair->first : pair->second);
 				freeBlock->setProcName(procName);
 				isBlockFound = true;
 				break;
@@ -55,7 +76,7 @@ QResultStatus Memory::allocate(const uint64_t bytes, const QString& procName)
 		if (!isBlockFound)
 		{
 			// then we must spit blocks until the needed level
-			Block* freeBlock = splitUntilDegree(searchedDegree);
+			Block* freeBlock = splitUntilDegree(settings->getTotalMemoryDegree() - searchedDegree);
 			if (freeBlock == nullptr)
 			{
 				resultStatus = QResult_ActionUnavailable;
@@ -77,9 +98,9 @@ QResultStatus Memory::free(const QString& procName)
 	{
 		foreach (pair_t* pair, *level)
 		{
-			if (pair->first->getProcName() == procName || pair->second->getProcName() == procName)
+			if ((pair->first != nullptr && pair->first->getProcName() == procName) || (pair->second != nullptr && pair->second->getProcName() == procName))
 			{
-				Block* blockToFree = (pair->first->getProcName() == procName ? pair->first : pair->second);
+				Block* blockToFree = ((pair->first != nullptr && pair->first->getProcName() == procName) ? pair->first : pair->second);
 				resultStatus = this->free(blockToFree);
 				isBlockFound = true;
 				break;
@@ -99,7 +120,8 @@ uint8_t Memory::query(const QString& procName)
 	{
 		foreach (pair_t* pair, *level)
 		{
-			if (pair->first->getProcName() == procName || pair->second->getProcName() == procName)
+			if ((pair->first != nullptr && pair->first->getProcName() == procName)
+					|| (pair->second != nullptr && pair->second->getProcName() == procName))
 			{
 				return (pair->first->getProcName() == procName ? pair->first->getDegree() : pair->second->getDegree());
 			}
@@ -108,10 +130,10 @@ uint8_t Memory::query(const QString& procName)
 	return 0;
 }
 
-QResultStatus Memory::toSvg(const QString& pathToFile, const DrawUtility& algo)
+QResultStatus Memory::toSvg(const QString& pathToFile)
 {
 	QResultStatus resultStatus = QResult_Success;
-	resultStatus = dotToSvg(pathToFile, algo);
+	resultStatus = dotToSvg(pathToFile);
 	return resultStatus;
 }
 
@@ -141,24 +163,29 @@ QChartView*Memory::toChart()
 
 		if (!curBlock->hasChilds())
 		{
-			uint64_t value = MemorySettings::DegreeToBytes(curBlock->getDegree());
+			uint64_t value = MemorySettings::degreeToBytes(curBlock->getDegree());
 			QBarSet* set = new QBarSet("");
 			*set << value;
 			// add to chart sets
 			if (curBlock->isFree())
 			{
-				set->setLabel(MemorySettings::DegreeToString(value));
-				set->setColor(QColor(0, 0, 0));
+				set->setLabel(MemorySettings::degreeToString(curBlock->getDegree()));
+				set->setColor(QColor(0xe0, 0xe0, 0xe0));
 			}
 			else
 			{
-				QString label = MemorySettings::DegreeToString(curBlock->getDegree());
+				QString label = MemorySettings::degreeToString(curBlock->getDegree());
 				label = QString("%1 = %2").arg(curBlock->getProcName(), label);
 				set->setLabel(label);
-				set->setColor(QColor(0, 200, 0));
+				set->setColor(curBlock->getColor());
 			}
 			sets->push_back(set);
 			// move back to the parent
+			viewedBlocks->insert(curBlock);
+			curBlock = curBlock->getParent();
+		}
+		else
+		{
 			viewedBlocks->insert(curBlock);
 			curBlock = curBlock->getParent();
 		}
@@ -172,11 +199,11 @@ QChartView*Memory::toChart()
 	QChart *chart = new QChart();
 	chart->addSeries(series);
 	chart->setTitle("Buddy memory algorithm");
-	chart->setAnimationOptions(QChart::SeriesAnimations);
+	chart->setAnimationOptions(QChart::NoAnimation);
 
 	QStringList categories;
-	uint8_t totalMemoryDegree = settings->GetTotalMemoryDegree();
-	categories << MemorySettings::DegreeToString(totalMemoryDegree);
+	uint8_t totalMemoryDegree = settings->getTotalMemoryDegree();
+	categories << MemorySettings::degreeToString(totalMemoryDegree);
 	QBarCategoryAxis *axis = new QBarCategoryAxis();
 	axis->append(categories);
 	chart->createDefaultAxes();
@@ -192,20 +219,83 @@ QChartView*Memory::toChart()
 	return chartView;
 }
 
+void Memory::clear()
+{
+	blocks->clear();
+	delete blocks;
+	if (rootPair != nullptr)
+	{
+		delete rootPair;
+	}
+	blocks = new tree_t();
+
+	size_t levelsCount = settings->getTotalMemoryDegree() + 1 - settings->getMinBlockDegree();
+	for (uint8_t levelIndex = 0; levelIndex < levelsCount; ++levelIndex)
+	{
+		blocks->push_back(new level_t());
+	}
+
+	rootPair = new pair_t(new Block(settings->getTotalMemoryDegree(), settings->getMinBlockDegree()), nullptr);
+	blocks->at(0)->push_back(rootPair);
+}
+
+void Memory::recalculateInfo()
+{
+	MemoryInfo::usedMemory = "";
+	MemoryInfo::usedPercent = 0;
+	MemoryInfo::smallestBlockSize = "";
+	MemoryInfo::blocksQuantity = 0;
+
+	uint64_t usedMemory = 0;
+	uint64_t blockSize = 0;
+	uint64_t smallestBlockSize = UINT64_MAX;
+	foreach (level_t* level, *blocks)
+	{
+		foreach (pair_t* pair, *level)
+		{
+			Block* block = nullptr;
+			for (uint8_t blockIndex = 0; blockIndex < 2; ++blockIndex)
+			{
+				if (blockIndex == 0) block = pair->first;
+				else block = pair->second;
+
+				if (block != nullptr && !block->hasChilds())
+				{
+					MemoryInfo::blocksQuantity++;
+					blockSize = MemorySettings::degreeToBytes(block->getDegree());
+					if (smallestBlockSize > blockSize)
+					{
+						smallestBlockSize = blockSize;
+					}
+					if (block->getProcName().length())
+					{
+						usedMemory += blockSize;
+					}
+				}
+			}
+		}
+	}
+
+	MemoryInfo::smallestBlockSize = MemorySettings::bytesToString(smallestBlockSize);
+	MemoryInfo::usedPercent = (double)usedMemory / (double)MemorySettings::degreeToBytes(settings->getTotalMemoryDegree());
+	MemoryInfo::usedMemory = MemorySettings::bytesToString(usedMemory);
+}
+
 Block* Memory::splitUntilDegree(const uint8_t degree)
 {
 	// looking for the last level with free blocks
-	uint8_t splitLevel = degree - 1;
+	int16_t splitLevel = degree - 1;
 	Block* freeBlock = nullptr;
-	for (; splitLevel > 0; --splitLevel)
+	for (; splitLevel >= 0; --splitLevel)
 	{
 		if (blocks->at(splitLevel)->size() != 0)
 		{
 			foreach (pair_t* pair, *(blocks->at(splitLevel)))
 			{
-				if (pair->first->isFree() || pair->second->isFree())
+				if ((pair->first != nullptr && pair->first->isFree()) ||
+						(pair->second != nullptr && pair->second->isFree()))
 				{
-					freeBlock = (pair->first->isFree() ? pair->first : pair->second);
+					freeBlock = ((pair->first != nullptr && pair->first->isFree()) ? pair->first : pair->second);
 					break;
 				}
 			}
@@ -284,26 +374,31 @@ QResultStatus Memory::memToDot(QString* result)
 					if (block != nullptr)
 					{
 						uint8_t degree = block->getDegree();
-						QString label = MemorySettings::DegreeToString(degree);
-						result->append(QString("%1 ").arg(uint64_t(block)));
+						QString label = MemorySettings::degreeToString(degree);
+						result->append(QString("%1 ").arg(QString::number((uint64_t(block)))));
 						if (!block->isFree())
 						{
+							QString code = "";
 							if (block->getProcName().length() != 0)
 							{
-								label = QString("%1 = %2").arg(block->getProcName(), label);
+								QString color = block->getColor().name();
+								code = QString(" [label=\"%1 = %2\", color=\"%3\", fontcolor=\"#000000\", style=filled];\n").arg(block->getProcName(), label, color);
 							}
-							QString code = QString("[label=\"%1\", color=\"#444444\", fontcolor=\"#ffffff\", style=filled];").arg(label);
+							else
+							{
+								code = QString(" [label=\"%1\", color=\"#e0e0e0\", fontcolor=\"#000000\", style=filled];\n").arg(label);
+							}
 							result->append(code);
 						}
 						else
 						{
-							QString code = QString("[label=\"%1\"];").arg(label);
+							QString code = QString(" [label=\"%1\"];").arg(label);
 							result->append(code);
 						}
 						// adding link from parent
 						if (block->getParent() != nullptr)
 						{
-							QString code = QString("%1 -> %2;").arg(uint64_t(block->getParent()), uint64_t(block));
+							QString code = QString("%1 -> %2;\n").arg(QString::number(uint64_t(block->getParent())), QString::number(uint64_t(block)));
 							result->append(code);
 						}
 					}
@@ -312,13 +407,13 @@ QResultStatus Memory::memToDot(QString* result)
 		}
 		result->append("}");
 
-		throw QResult_Success;
+		return QResult_Success;
 	} catch (QResultStatus resultStatus) {
 		return resultStatus;
 	}
 }
 
-QResultStatus Memory::dotToSvg(const QString& pathToFile, const DrawUtility& util)
+QResultStatus Memory::dotToSvg(const QString& pathToFile)
 {
 	try {
 		// making dot file
@@ -342,7 +437,7 @@ QResultStatus Memory::dotToSvg(const QString& pathToFile, const DrawUtility& uti
 		file.close();
 		// calling utility
 		QString utility = "";
-		switch (util) {
+		switch (settings->getDrawUtility()) {
 			case DrawUtility::dot:
 				utility = "dot";
 				break;

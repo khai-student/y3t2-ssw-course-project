@@ -8,7 +8,7 @@ MemorySettings::MemorySettings()
 	autoSaveCmds = true;
 }
 
-uint64_t MemorySettings::DegreeToBytes(uint8_t degree)
+uint64_t MemorySettings::degreeToBytes(uint8_t degree)
 {
 	uint64_t bytes = 1;
 	for (bytes = 1; degree > 0; --degree)
@@ -16,10 +16,10 @@ uint64_t MemorySettings::DegreeToBytes(uint8_t degree)
 	return bytes;
 }
 
-QResultStatus MemorySettings::SetMinBlockDegree(uint8_t degree)
+QResultStatus MemorySettings::setMinBlockDegree(uint8_t degree)
 {
 	QResultStatus resultStatus = QResult_Success;
-	if (degree < totalMemoryDegree)
+	if (degree <= totalMemoryDegree)
 	{
 		minBlockDegree = degree;
 	}
@@ -30,7 +30,7 @@ QResultStatus MemorySettings::SetMinBlockDegree(uint8_t degree)
 	return resultStatus;
 }
 
-QResultStatus MemorySettings::SetTotalMemoryDegree(uint8_t degree)
+QResultStatus MemorySettings::setTotalMemoryDegree(uint8_t degree)
 {
 	QResultStatus resultStatus = QResult_Success;
 	if (degree <= MAX_TOTAL_MEMORY_DEGREE)
@@ -45,7 +45,7 @@ QResultStatus MemorySettings::SetTotalMemoryDegree(uint8_t degree)
 	return resultStatus;
 }
 
-QResultStatus MemorySettings::SetStepsExecutionSpeed(double speed)
+QResultStatus MemorySettings::setStepsExecutionSpeed(double speed)
 {
 	QResultStatus resultStatus = QResult_Success;
 	if (speed > 0)
@@ -59,32 +59,42 @@ QResultStatus MemorySettings::SetStepsExecutionSpeed(double speed)
 	return resultStatus;
 }
 
-void MemorySettings::SetAutoSaveCmds(bool value)
+void MemorySettings::setAutoSaveCmds(bool value)
 {
 	autoSaveCmds = value;
 }
 
-uint8_t MemorySettings::GetMinBlockDegree()
+void MemorySettings::setDrawUtility(DrawUtility value)
+{
+	drawUtility = value;
+}
+
+uint8_t MemorySettings::getMinBlockDegree()
 {
 	return minBlockDegree;
 }
 
-uint8_t MemorySettings::GetTotalMemoryDegree()
+uint8_t MemorySettings::getTotalMemoryDegree()
 {
 	return totalMemoryDegree;
 }
 
-uint8_t MemorySettings::GetStepsExecutionSpeed()
+double MemorySettings::getStepsExecutionSpeed()
 {
 	return stepsExecutionSpeed;
 }
 
-bool MemorySettings::GetAutoSaveCmds()
+bool MemorySettings::getAutoSaveCmds()
 {
 	return autoSaveCmds;
 }
 
-QString MemorySettings::DegreeToString(uint8_t degree)
+DrawUtility MemorySettings::getDrawUtility()
+{
+	return drawUtility;
+}
+
+QString MemorySettings::degreeToString(uint8_t degree)
 {
 	uint8_t divider = 0;
 	uint16_t bytes = 1;
@@ -92,7 +102,40 @@ QString MemorySettings::DegreeToString(uint8_t degree)
 
 	for (divider = 0; degree >= 10; degree -= 10 , ++divider);
 
-	bytes = (uint16_t)DegreeToBytes(degree);
+	bytes = (uint16_t)degreeToBytes(degree);
+
+	switch (divider) {
+		case 0:
+			result = QString("%1B").arg(bytes);
+			break;
+		case 1:
+			result = QString("%1KB").arg(bytes);
+			break;
+		case 2:
+			result = QString("%1MB").arg(bytes);
+			break;
+		case 3:
+			result = QString("%1GB").arg(bytes);
+			break;
+		case 4:
+			result = QString("%1TB").arg(bytes);
+			break;
+		case 5:
+			result = QString("%1 PB").arg(bytes);
+			break;
+		default:
+			break;
+	}
+
+	return result;
+}
+
+QString MemorySettings::bytesToString(uint64_t bytes)
+{
+	uint8_t divider = 0;
+	QString result = QString("");
+
+	for (divider = 0; bytes >= 1024; bytes >>= 10 , ++divider);
 
 	switch (divider) {
 		case 0:

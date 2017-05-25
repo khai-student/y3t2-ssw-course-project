@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>626</width>
+    <width>839</width>
     <height>443</height>
    </rect>
   </property>
@@ -14,7 +14,7 @@
    <string>Dialog</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_5">
-   <item row="0" column="0">
+   <item row="0" column="1">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -37,8 +37,18 @@
            <enum>QFrame::Raised</enum>
           </property>
           <layout class="QGridLayout" name="gridLayout_6">
-           <item row="0" column="0" colspan="4">
-            <widget class="QTableWidget" name="cmds"/>
+           <item row="0" column="0" colspan="8">
+            <widget class="QTableWidget" name="cmds">
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+             <property name="alternatingRowColors">
+              <bool>false</bool>
+             </property>
+             <property name="selectionBehavior">
+              <enum>QAbstractItemView::SelectRows</enum>
+             </property>
+            </widget>
            </item>
            <item row="1" column="0" alignment="Qt::AlignHCenter|Qt::AlignVCenter">
             <widget class="QComboBox" name="cmdOperation">
@@ -57,20 +67,54 @@
              </item>
              <item>
               <property name="text">
-               <string>Stat</string>
+               <string>Query</string>
               </property>
              </item>
             </widget>
            </item>
-           <item row="1" column="1">
-            <widget class="QLineEdit" name="cmdBlockName"/>
-           </item>
-           <item row="1" column="2">
+           <item row="1" column="7">
             <widget class="QPushButton" name="addCmd">
              <property name="text">
               <string>Add</string>
              </property>
             </widget>
+           </item>
+           <item row="1" column="6">
+            <widget class="QComboBox" name="blockSizeUnits">
+             <item>
+              <property name="text">
+               <string>B</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>KB</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>MB</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>GB</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="1" column="5">
+            <widget class="QSpinBox" name="blockSize">
+             <property name="minimum">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <number>1023</number>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1" colspan="4">
+            <widget class="QLineEdit" name="cmdBlockName"/>
            </item>
           </layout>
          </widget>
@@ -88,24 +132,31 @@
               <string>Execution</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_3">
-              <item row="0" column="0">
+              <item row="1" column="0">
                <widget class="QPushButton" name="autoExec">
                 <property name="text">
                  <string>Automatic execution</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QPushButton" name="execNextCmd">
+              <item row="3" column="0">
+               <widget class="QPushButton" name="resetExec">
                 <property name="text">
-                 <string>Execute next</string>
+                 <string>Reset execution</string>
                 </property>
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QPushButton" name="resetExec">
+               <widget class="QPushButton" name="execNextCmd">
                 <property name="text">
-                 <string>Reset execution</string>
+                 <string>Execute command</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QPushButton" name="execAll">
+                <property name="text">
+                 <string>Execute all</string>
                 </property>
                </widget>
               </item>
@@ -146,47 +197,10 @@
        <string>Settings</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="0" column="3">
-        <widget class="QSlider" name="minBlockDegreeSlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0" colspan="2">
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>GraphVix drawing tool</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="3" colspan="3">
-        <widget class="QComboBox" name="drawingTool"/>
-       </item>
-       <item row="4" column="0" colspan="2">
-        <widget class="QCheckBox" name="autoSave">
-         <property name="text">
-          <string>Autosave commands</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="5">
-        <widget class="QSpinBox" name="minBlockDegreeSpinBox"/>
-       </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_4">
          <property name="text">
           <string>Total memory</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="5">
-        <widget class="QSpinBox" name="totalMemorySpinBox"/>
-       </item>
-       <item row="3" column="0" colspan="2">
-        <widget class="QLabel" name="label_6">
-         <property name="text">
-          <string>Steps execution speed</string>
          </property>
         </widget>
        </item>
@@ -197,17 +211,93 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="3">
-        <widget class="QSlider" name="totalMemorySlider">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+       <item row="3" column="0" colspan="2">
+        <widget class="QLabel" name="label_6">
+         <property name="text">
+          <string>Steps execution speed</string>
          </property>
         </widget>
        </item>
-       <item row="4" column="3" colspan="3">
-        <widget class="QPushButton" name="restoreDefaultSettings">
+       <item row="4" column="1">
+        <widget class="QComboBox" name="drawingTool">
+         <item>
+          <property name="text">
+           <string>dot</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>neato</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>fdp</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>sfdp</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>twopi</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>circo</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="4" column="0">
+        <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Restore default settings</string>
+          <string>GraphVix drawing tool</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="6">
+        <widget class="QLabel" name="label_5">
+         <property name="text">
+          <string>2^</string>
+         </property>
+         <property name="scaledContents">
+          <bool>false</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="6">
+        <widget class="QLabel" name="label_3">
+         <property name="text">
+          <string>2^</string>
+         </property>
+         <property name="scaledContents">
+          <bool>false</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="7">
+        <widget class="QSpinBox" name="minBlockDegreeSpinBox"/>
+       </item>
+       <item row="1" column="7">
+        <widget class="QSpinBox" name="totalMemorySpinBox"/>
+       </item>
+       <item row="1" column="1">
+        <widget class="QLabel" name="totalMemoryLabel">
+         <property name="text">
+          <string>VALUE</string>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
          </property>
         </widget>
        </item>
@@ -224,46 +314,21 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="1">
-        <widget class="QLabel" name="totalMemoryLabel">
-         <property name="text">
-          <string>VALUE</string>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="5">
-        <widget class="QDoubleSpinBox" name="stepsExecSpeedSpinBox"/>
-       </item>
        <item row="0" column="4">
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>2^</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
+        <widget class="QSlider" name="minBlockDegreeSlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
        <item row="1" column="4">
-        <widget class="QLabel" name="label_5">
-         <property name="text">
-          <string>2^</string>
-         </property>
-         <property name="scaledContents">
-          <bool>false</bool>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignCenter</set>
+        <widget class="QSlider" name="totalMemorySlider">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
          </property>
         </widget>
        </item>
-       <item row="3" column="2" colspan="3">
+       <item row="3" column="4">
         <widget class="QSlider" name="stepsExecSpeedSlider">
          <property name="maximum">
           <number>99</number>
@@ -278,6 +343,23 @@
           <number>0</number>
          </property>
         </widget>
+       </item>
+       <item row="4" column="7">
+        <widget class="QPushButton" name="restoreDefaultSettings">
+         <property name="text">
+          <string>Restore default settings</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="2" colspan="5">
+        <widget class="QCheckBox" name="autoSave">
+         <property name="text">
+          <string>Autosave commands</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="7">
+        <widget class="QDoubleSpinBox" name="stepsExecSpeedSpinBox"/>
        </item>
       </layout>
      </widget>

@@ -61,7 +61,7 @@ bool Block::isFree() const
 QResultStatus Block::free()
 {
 	QResultStatus resultStatus = QResult_Success;
-	if (!isFree() && childFirst == nullptr && childSecond == nullptr)
+	if (childFirst == nullptr && childSecond == nullptr)
 	{
 		procName = "";
 	}
@@ -121,6 +121,11 @@ Block*Block::getSecondChild() const
 	return childSecond;
 }
 
+QColor Block::getColor() const
+{
+	return color;
+}
+
 void Block::mergeChilds()
 {
 
@@ -129,6 +134,9 @@ void Block::mergeChilds()
 	{
 		delete childFirst;
 		delete childSecond;
+
+		childFirst = nullptr;
+		childSecond = nullptr;
 	}
 }
 
@@ -137,4 +145,5 @@ Block::Block()
 	this->parent = nullptr;
 	this->childFirst = nullptr;
 	this->childSecond = nullptr;
+	color = QColor(rand()%256, rand()%256, rand()%256);
 }

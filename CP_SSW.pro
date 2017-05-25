@@ -29,14 +29,16 @@ SOURCES += main.cpp\
     memory_settings.cpp \
     command_processor.cpp \
     memory.cpp \
-    block.cpp
+    block.cpp \
+    memory_info.cpp
 
 HEADERS  += window_main.h \
     dialog_settings.h \
     memory_settings.h \
     command_processor.h \
     memory.h \
-    block.h
+    block.h \
+    memory_info.h
 
 FORMS    += window_main.ui \
     dialog_settings.ui
