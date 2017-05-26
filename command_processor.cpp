@@ -248,13 +248,13 @@ QString Command::cmdToStr()
 	switch (action)
 	{
 		case CommandAction::Allocate:
-			result.append("Allocate");
+			result.append("+");
 			break;
 		case CommandAction::Free:
-			result.append("Free");
+			result.append("-");
 			break;
 		case CommandAction::Query:
-			result.append("Query");
+			result.append("?");
 			break;
 		default:
 			return "";
@@ -271,15 +271,15 @@ QResultStatus Command::strToCmd(QString& str)
 		QStringList subStrings = str.split(QRegularExpression("\\s? \\s?"), QString::SkipEmptyParts);
 		if (subStrings.size() != 3) throw QResult_IncorrectData;
 
-		if (subStrings.at(0).toLower() == "allocate")
+		if (subStrings.at(0) == "+")
 		{
 			action = CommandAction::Allocate;
 		}
-		else if (subStrings.at(0).toLower() == "free")
+		else if (subStrings.at(0) == "-")
 		{
 			action = CommandAction::Free;
 		}
-		else if (subStrings.at(0).toLower() == "query")
+		else if (subStrings.at(0) == "?")
 		{
 			action = CommandAction::Query;
 		}

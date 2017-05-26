@@ -344,10 +344,11 @@ QResultStatus Memory::free(Block* block)
 		{
 			if (pair->first == block || pair->second == block)
 			{
+				Block* neighbour = pair->first == block ? pair->second : pair->first;
 				Block* parent = block->getParent();
 				resultStatus = block->free();
 				// trying to merge
-				if (resultStatus == QResult_Success && block->merge(pair->second) == QResult_Success)
+				if (resultStatus == QResult_Success && block->merge(neighbour) == QResult_Success)
 				{
 					level->removeOne(pair);
 					if (pair != nullptr) delete pair;

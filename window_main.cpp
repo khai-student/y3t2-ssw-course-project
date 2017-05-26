@@ -64,18 +64,21 @@ void WindowMain::on_redrawButton_clicked()
 void WindowMain::on_actionCommandWindow_triggered()
 {
 	dialog->setHidden(false);
+	dialog->raise();
 	emit chooseDialogTab(DialogTab::Commands);
 }
 
 void WindowMain::on_actionSettingsWindow_triggered()
 {
 	dialog->setHidden(false);
+	dialog->raise();
 	emit chooseDialogTab(DialogTab::Settings);
 }
 
 void WindowMain::on_actionLogWindow_triggered()
 {
 	dialog->setHidden(false);
+	dialog->raise();
 	emit chooseDialogTab(DialogTab::Log);
 }
 

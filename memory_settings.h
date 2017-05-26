@@ -19,7 +19,7 @@ enum DrawUtility
 class MemorySettings
 {
 	public:
-		const uint8_t MAX_TOTAL_MEMORY_DEGREE = 20;
+		const uint8_t MAX_TOTAL_MEMORY_DEGREE = 30;
 		const double MAX_STEPS_EXECUTION_SPEED = 5.0;
 
 		MemorySettings();

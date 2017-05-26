@@ -104,27 +104,41 @@ void DialogSettings::updateCmdsTable()
 	for (uint16_t cmdIndex = 0; cmdIndex < cmdsCount; ++cmdIndex)
 	{
 		Command* cmd = processor->getCmd(cmdIndex);
+		QTableWidgetItem* item;
 		switch (cmd->action)
 		{
 			case CommandAction::Allocate:
-				ui->cmds->setItem(cmdIndex, 0, new QTableWidgetItem("Allocate"));
+				item = new QTableWidgetItem("+");
+				item->setTextAlignment(Qt::AlignCenter);
+				ui->cmds->setItem(cmdIndex, 0, item);
 				break;
 			case CommandAction::Free:
-				ui->cmds->setItem(cmdIndex, 0, new QTableWidgetItem("Free"));
+				item = new QTableWidgetItem("-");
+				item->setTextAlignment(Qt::AlignCenter);
+				ui->cmds->setItem(cmdIndex, 0, item);
 				break;
 			case CommandAction::Query:
-				ui->cmds->setItem(cmdIndex, 0, new QTableWidgetItem("Query"));
+				item = new QTableWidgetItem("?");
+				item->setTextAlignment(Qt::AlignCenter);
+				ui->cmds->setItem(cmdIndex, 0, item);
 				break;
 		}
-		ui->cmds->setItem(cmdIndex, 1, new QTableWidgetItem(cmd->blockName));
+		item = new QTableWidgetItem(cmd->blockName);
+		item->setTextAlignment(Qt::AlignCenter);
+		ui->cmds->setItem(cmdIndex, 1, item);
 		if (cmd->blockSize != 0)
 		{
-			ui->cmds->setItem(cmdIndex, 2, new QTableWidgetItem(MemorySettings::bytesToString(cmd->blockSize)));
+			item = new QTableWidgetItem(MemorySettings::bytesToString(cmd->blockSize));
+			item->setTextAlignment(Qt::AlignCenter);
+			ui->cmds->setItem(cmdIndex, 2, item);
 		}
 		else
 		{
 			ui->cmds->setItem(cmdIndex, 2, new QTableWidgetItem(""));
 		}
+
+		item->setTextAlignment(Qt::AlignCenter);
+		ui->cmds->setItem(cmdIndex, 0, item);
 	}
 
 	highlightNextCommand();
