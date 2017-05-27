@@ -398,6 +398,33 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>cmdOperation</tabstop>
+  <tabstop>cmdBlockName</tabstop>
+  <tabstop>blockSize</tabstop>
+  <tabstop>blockSizeUnits</tabstop>
+  <tabstop>addCmd</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>autoExec</tabstop>
+  <tabstop>execNextCmd</tabstop>
+  <tabstop>cmds</tabstop>
+  <tabstop>saveCmds</tabstop>
+  <tabstop>resetExec</tabstop>
+  <tabstop>execAll</tabstop>
+  <tabstop>drawingTool</tabstop>
+  <tabstop>loadCmds</tabstop>
+  <tabstop>minBlockDegreeSpinBox</tabstop>
+  <tabstop>totalMemorySpinBox</tabstop>
+  <tabstop>minBlockDegreeSlider</tabstop>
+  <tabstop>totalMemorySlider</tabstop>
+  <tabstop>stepsExecSpeedSlider</tabstop>
+  <tabstop>restoreDefaultSettings</tabstop>
+  <tabstop>autoSave</tabstop>
+  <tabstop>stepsExecSpeedSpinBox</tabstop>
+  <tabstop>log</tabstop>
+  <tabstop>exportLog</tabstop>
+  <tabstop>clearLog</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

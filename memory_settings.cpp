@@ -29,7 +29,6 @@ QResultStatus MemorySettings::setMinBlockDegree(uint8_t degree)
 	}
 	return resultStatus;
 }
-
 QResultStatus MemorySettings::setTotalMemoryDegree(uint8_t degree)
 {
 	QResultStatus resultStatus = QResult_Success;
@@ -121,7 +120,7 @@ QString MemorySettings::degreeToString(uint8_t degree)
 			result = QString("%1TB").arg(bytes);
 			break;
 		case 5:
-			result = QString("%1 PB").arg(bytes);
+			result = QString("%1PB").arg(bytes);
 			break;
 		default:
 			break;
@@ -134,27 +133,28 @@ QString MemorySettings::bytesToString(uint64_t bytes)
 {
 	uint8_t divider = 0;
 	QString result = QString("");
+	double value = bytes;
 
-	for (divider = 0; bytes >= 1024; bytes >>= 10 , ++divider);
+	for (divider = 0; value >= 1024; value /= 1024 , ++divider);
 
 	switch (divider) {
 		case 0:
-			result = QString("%1B").arg(bytes);
+			result = QString("%1B").arg(QString::number(value));
 			break;
 		case 1:
-			result = QString("%1KB").arg(bytes);
+			result = QString("%1KB").arg(QString::number(value));
 			break;
 		case 2:
-			result = QString("%1MB").arg(bytes);
+			result = QString("%1MB").arg(QString::number(value));
 			break;
 		case 3:
-			result = QString("%1GB").arg(bytes);
+			result = QString("%1GB").arg(QString::number(value));
 			break;
 		case 4:
-			result = QString("%1TB").arg(bytes);
+			result = QString("%1TB").arg(QString::number(value));
 			break;
 		case 5:
-			result = QString("%1 PB").arg(bytes);
+			result = QString("%1PB").arg(QString::number(value));
 			break;
 		default:
 			break;

@@ -125,14 +125,14 @@ QString Memory::query(const QString& procName)
 			{
 				Block* block = pair->first->getProcName() == procName ? pair->first : pair->second;
 
-				uint16_t size = MemorySettings::degreeToBytes(block->getDegree());
-				uint16_t beginAddress = block->getBeginAddress();
+				uint64_t size = MemorySettings::degreeToBytes(block->getDegree());
+				uint64_t beginAddress = block->getBeginAddress();
 
 				return QString("Block %1 > Size = %2 -> [%3; %4]").arg(
 							block->getProcName(),
-							QString::number(size),
-							QString::number(beginAddress),
-							QString::number(beginAddress + size));
+							MemorySettings::bytesToString(size),
+							MemorySettings::bytesToString(beginAddress),
+							MemorySettings::bytesToString(beginAddress + size));
 			}
 		}
 	}
